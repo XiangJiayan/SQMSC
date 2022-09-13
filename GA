@@ -3,19 +3,21 @@ import time
 
 import matplotlib .pyplot as plt
 import copy
-import pickle
 import numpy as np
 import pandas as pd
 
 def data(QoSAttribute):
     path = 'qws2resetIndex.csv'
-    # employ pandas to get data
-    data = pd.read_csv(path)  # get all datas from document
-    data = data.reset_index(drop=True)  # reset the index
+    # 读取文件
+    data = pd.read_csv(path)
+    data = data.reset_index(drop=True)
+
     for i in QoSAttribute:
         if i == 'Availability' or i == 'Successability' or i == 'Reliability' or i == 'Compliance' or i == 'Best Practices':
             data[[i]] = data[[i]]/100
-    data = data[QoSAttribute]   # based on the QoS of user's requirement to process
+    # 选择对应的QoS属性列
+    data = data[QoSAttribute]
+    # 每个候选集的服务个数
     candidate_number =100
     dfA = data[0:candidate_number]
     dfB = data[candidate_number:candidate_number * 2]
@@ -37,16 +39,19 @@ def data(QoSAttribute):
     return dfA,dfB,dfC,dfD,dfE,dfF,dfG,dfH,dfI
 
 def init(tplAll,parameter):
+    # 初始化种群
     population = []
     for i in range(parameter['population_size']):
         temp = []
         for j in range(parameter['task_number']):
+            # 为每个种群个体的每个子任务随机选择候选集中的数据
             k = random.randint(0, len(tplAll[j].values)-1)
             temp.append(tplAll[j].values[k])
         population.append(temp)
     return population
 
 def QoS_Computing(QoS,QoSAttribute):
+    # 计算复合服务的QoS值，其中传进来的QoS正属性均是负数
     a=[]
     for i in range(len(QoSAttribute)):
         if QoSAttribute[i] == 'Response Time' or QoSAttribute[i] == 'Latency':
@@ -59,6 +64,7 @@ def QoS_Computing(QoS,QoSAttribute):
     return mat
 
 def A_dominates_B (A, B):
+
     if all(A <= B) and any(A < B):
         isDominated = True
     else:
@@ -67,7 +73,7 @@ def A_dominates_B (A, B):
 
 def Selection(populationRaw,parameter,QoSAttribute):
     population=copy.deepcopy(populationRaw)
-    #将正属性的值前加符号，方便Skyline service的评判
+    #将正属性的值前加负号，方便Skyline service的评判
     for i in range(parameter['population_size']):
         for j in range(parameter['task_number']):
             for k in range(len(QoSAttribute)):
@@ -76,6 +82,7 @@ def Selection(populationRaw,parameter,QoSAttribute):
 
     new_population=[]
     i = 0
+    # 选择种群中的Skyline个体组成新的种群
     while i < 100:
         dominated = True
         A_po = random.choice(population)
@@ -90,6 +97,7 @@ def Selection(populationRaw,parameter,QoSAttribute):
             i += 1
             new_population.append(A_po)
     new_population = np.array(new_population)
+    # 将加上的负号去除
     for i in range(parameter['population_size']):
         for j in range(parameter['task_number']):
             for k in range(len(QoSAttribute)):
@@ -98,12 +106,15 @@ def Selection(populationRaw,parameter,QoSAttribute):
     return new_population
 
 def Crossover(populationRaw,parameter):
+    # 交叉概率
     cp = parameter['crossover_probability']
+
     population = copy.deepcopy(populationRaw).tolist()
     new_population = []
     crossover_population = []
 
     for i in population:
+        # 随机生成一个0到1的数，如果小于交叉概率则要进行交叉操作，反之不进行交叉操作
         r = random.random()
         if r <= cp:
             crossover_population.append(i)
@@ -134,10 +145,13 @@ def Crossover(populationRaw,parameter):
     return new_population
 
 def Mutation(populationRaw, parameter,tplAll, QoSAttribute):
+    # 突变概率
     mp = parameter['mutation_probability']
     population = copy.deepcopy(populationRaw).tolist()
     new_population = []
+
     for i in population:
+        # 随机生成一个0到1的数，如果小于突变概率则要进行突变操作，反之不进行突变操作
         r = random.random()
         if r <= mp:
             mutation_position = random.randint(0, parameter['task_number']-1)
@@ -153,6 +167,7 @@ def Mutation(populationRaw, parameter,tplAll, QoSAttribute):
     return new_population
 
 def Computing(QoS, QoSAttribute):
+    # 计算复合服务的QoS值
     a=[]
     for i in range(len(QoSAttribute)):
         if QoSAttribute[i] == 'Response Time' or QoSAttribute[i] == 'Latency':
@@ -165,6 +180,7 @@ def Computing(QoS, QoSAttribute):
     return mat
 
 def get_Min_Max(tplAll,QoSAttribute):
+    # 得到每个候选服务集里每个QoS属性的最大值和最小值
     dfA=tplAll[0]
     dfB=tplAll[1]
     dfC=tplAll[2]
@@ -196,10 +212,10 @@ def get_Min_Max(tplAll,QoSAttribute):
     return df_Max_Min
 
 def Normalization(qos, df_Max_Min, QoSAttribute):
-    # normalization
-    # In this part, no matter whether the QoS is positive or negative, the normalized result is that the larger the value, the better
+    # 对QoS属性归一化，均是值越大越好
     df=pd.DataFrame(qos,columns=QoSAttribute)
     for i in QoSAttribute:
+        # 如果最大值等于最小值，那么归一化的值为1
         if df_Max_Min.loc['max', i] == df_Max_Min.loc['min', i]:
             df[[i]] = 1
         else:
@@ -212,6 +228,7 @@ def Normalization(qos, df_Max_Min, QoSAttribute):
     return df
 
 def Fitness(population, tplAll, QoSAttribute):
+    # 计算种群的适应度
     qos=[]
     for i in population:
         qos.append(Computing(i, QoSAttribute))
@@ -264,21 +281,32 @@ def FuzzingMatch(population, tplAll,parameter):
     return new_population
 
 def GA( tplAll, QoSAttribute):
+    # 定义参数
     parameter = {'crossover_probability': 0.88, 'mutation_probability': 0.1, 'task_number': 9, 'population_size': 100, 'iteration_number': 100}
+    # 初始化种群
     population = init(tplAll,parameter)
     list=[]
+    # 添加时间戳
     s1=time.perf_counter()
     count=0
-    for i in range(100):
+    for i in range(100): # 迭代次数
+        # 记录刚开始种群的优化性能
         b = Fitness(population, tplAll, QoSAttribute) / len(QoSAttribute)
+        # 选择
         population_Select = Selection(population, parameter, QoSAttribute)
+        # 交叉
         population_Crossover = Crossover(population_Select, parameter)
+        # 突变
         population_Mutation = Mutation(population_Crossover, parameter, tplAll, QoSAttribute)
+        # 从真实数据集中选择与种群中数据最相似的来代替这个种群
         population_Real = FuzzingMatch(population_Mutation, tplAll, parameter)
         list.append(Fitness(population_Real, tplAll, QoSAttribute) / len(QoSAttribute))
+        # 记录迭代一次后种群的优化性能
         a=Fitness(population_Real, tplAll, QoSAttribute)/ len(QoSAttribute)
+
         if a>b:
             population=population_Real
+        # 判断迭代停止条件
         if abs(a-b)<0.3:
             count+=1
         else:
@@ -287,10 +315,6 @@ def GA( tplAll, QoSAttribute):
             break
     max=Fitness(population_Real, tplAll, QoSAttribute) / len(QoSAttribute)
     s2=time.perf_counter()
-    with open('test_pickle.pickle', 'wb') as f:  # 以二进制模式打开文件
-        pickle.dump(list, f)
-    print(max)
-    print(s2-s1)
     plt.plot(list, color='red')
     plt.ylabel(u'Overall Optimality')
     plt.xlabel(u'Iterations')
@@ -307,6 +331,7 @@ if  __name__ == "__main__" :
           "6:Compliance\n"
           "7:Best Practices\n"
           "8:Latency")
+    # QoS属性个数
     for i in range(3):
         print('please input the number of the ', end="")
         print(i+1, end="")
