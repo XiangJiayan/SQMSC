@@ -5,7 +5,15 @@
 ### The entire process of SQMSC-MH is to find Skyline services
 ### The input data of the above code are all data in the qws2resetIndex dataset. The qws2resetIndex dataset is roughly the same as the real dataset QWS2. The difference is that we have disturbed its row index
 # Parameters
-### GA、GA+Skyline：candidate_number 每个子任务的候选集中服务个数，crossover_probability 交叉概率，mutation_probability 突变概率，task_number 任务数，population_size 种群个体数
-### PSO、PSO+Skylie：w 惯性权重，c1和c2 学习因子，Vmax 速度限制，task_number 任务数，population_size 粒子群个体数
-### TLBO、TLBO+Skyline：task_number 任务数，population_size 学生群体数
-### SQWSC：n QoS属性个数，candidate_number 每个子任务的候选集中服务个数，crossover_probability交叉概率，mutation_probability突变概率，task_number任务数，population_size种群个体数
+### GA、GA+Skyline:
+candidate_number(Number of services in candidate set of each subtask),
+crossover_probability,
+mutation_probability,
+task_number,
+population_size
+### PSO、PSO+Skylie：
+w(Inertia weight), c1 and c2(Learning factor), Vmax(speed limit), task_number, population_size
+### TLBO、TLBO+Skyline:
+task_number, population_size
+### SQWSC:
+n(Number of QoS attributes), candidate_number(Number of services in candidate set of each subtask), crossover_probability, mutation_probability, task_number, population_size
