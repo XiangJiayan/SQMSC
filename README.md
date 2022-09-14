@@ -17,3 +17,5 @@ w(Inertia weight), c1 and c2(Learning factor), Vmax(speed limit), task_number, p
 task_number, population_size
 ### SQWSC:
 n(Number of QoS attributes), candidate_number(Number of services in candidate set of each subtask), crossover_probability, mutation_probability, task_number, population_size
+# Note：
+###
