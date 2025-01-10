@@ -13,7 +13,7 @@ crossover_probability,
 mutation_probability,
 task_number,
 population_size.
-### PSO、PSO+Skylie：
+### PSO、PSO+Skyline：
 w(Inertia weight), c1 and c2(Learning factor), Vmax(speed limit), task_number, population_size
 ### TLBO、TLBO+Skyline:
 task_number, population_size
